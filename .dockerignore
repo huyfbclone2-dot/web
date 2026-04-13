@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.log
+cache/
+crop_debug.png
+.git/
+.gitignore
+.vscode/
+.idea/
+.venv/
+venv/
+node_modules/
