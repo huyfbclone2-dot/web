@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flash SWF Player</title>
+    <style>
+      :root {
+        --bg: #101113;
+        --panel: #1b1e21;
+        --line: rgba(255, 255, 255, 0.1);
+        --text: #f5f5f0;
+        --muted: #b4b6b1;
+        --accent: #f0dd90;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top, rgba(219, 176, 92, 0.14), transparent 28%),
+          linear-gradient(180deg, #181a1c 0%, #0e0f10 100%);
+      }
+
+      .shell {
+        width: min(1400px, calc(100% - 32px));
+        margin: 20px auto;
+        display: grid;
+        gap: 18px;
+      }
+
+      .panel {
+        background: rgba(27, 30, 33, 0.94);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 20px;
+      }
+
+      .label {
+        margin: 0 0 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-size: 12px;
+        color: var(--accent);
+      }
+
+      .title {
+        margin: 0 0 8px;
+        font-size: 34px;
+        line-height: 1.05;
+      }
+
+      .subtle {
+        color: var(--muted);
+      }
+
+      .controls {
+        display: grid;
+        gap: 14px;
+      }
+
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      input[type="url"],
+      input[type="number"] {
+        min-width: 0;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        font: inherit;
+      }
+
+      input[type="url"] {
+        flex: 1;
+      }
+
+      input[type="number"] {
+        width: 130px;
+      }
+
+      button {
+        padding: 12px 18px;
+        border-radius: 14px;
+        border: 1px solid rgba(240, 221, 144, 0.32);
+        background: linear-gradient(180deg, rgba(240, 221, 144, 0.22), rgba(216, 177, 88, 0.08));
+        color: #fff7d1;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .check {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 48px;
+        padding: 0 12px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .player-shell {
+        background: #050607;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        min-height: 720px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .player-frame {
+        width: 100%;
+        height: 78vh;
+        min-height: 720px;
+        border: 0;
+        background: #0a0b0c;
+      }
+
+      .helper {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .helper code {
+        color: var(--accent);
+      }
+
+      @media (max-width: 900px) {
+        .player-frame {
+          min-height: 560px;
+          height: 68vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <section class="panel">
+        <p class="label">Flash Player</p>
+        <h1 class="title">Mở nhanh file SWF activity</h1>
+        <p class="subtle helper">
+          Paste link CDN dạng <code>.../resource/activity/...swf?version=</code>. Nếu Firefox cũ không load thẳng
+          được, cứ bật <code>Dùng proxy local</code> để server dev fetch hộ rồi trả về cùng origin.
+        </p>
+
+        <div class="controls">
+          <div class="row">
+            <input
+              id="swfUrl"
+              type="url"
+              placeholder="http://hcm.cdn.truykich.vn/s2/resource/activity/0814-8FutureMall_...swf?version="
+            />
+            <button id="openButton" type="button">Mở SWF</button>
+            <a id="openDirectLink" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:14px;border:1px solid rgba(240,221,144,0.32);background:rgba(255,255,255,0.05);color:#fff7d1;text-decoration:none;">Mở trực tiếp</a>
+          </div>
+
+          <div class="row">
+            <label class="check">
+              <input id="proxyToggle" type="checkbox" checked />
+              <span>Dùng proxy local</span>
+            </label>
+            <input id="swfWidth" type="number" min="640" step="10" value="1180" />
+            <input id="swfHeight" type="number" min="480" step="10" value="820" />
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <p class="label">Player</p>
+        <div class="player-shell" id="playerShell">
+          <div id="playerEmpty" class="subtle">Nhập URL SWF rồi bấm Mở SWF.</div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      (function () {
+        var swfUrlInput = document.getElementById("swfUrl");
+        var openButton = document.getElementById("openButton");
+        var proxyToggle = document.getElementById("proxyToggle");
+        var swfWidth = document.getElementById("swfWidth");
+        var swfHeight = document.getElementById("swfHeight");
+        var openDirectLink = document.getElementById("openDirectLink");
+        var playerShell = document.getElementById("playerShell");
+        var playerEmpty = document.getElementById("playerEmpty");
+
+        function getQuery(name) {
+          var params = new URLSearchParams(window.location.search);
+          return params.get(name) || "";
+        }
+
+        function buildPlayerUrl(rawUrl) {
+          if (!proxyToggle.checked) {
+            return rawUrl;
+          }
+          return "/api/proxy-swf?url=" + encodeURIComponent(rawUrl);
+        }
+
+        function renderPlayer(rawUrl) {
+          var trimmed = (rawUrl || "").trim();
+          if (!trimmed) {
+            return;
+          }
+
+          var playerUrl = buildPlayerUrl(trimmed);
+          openDirectLink.href = playerUrl;
+          var width = parseInt(swfWidth.value || "1180", 10);
+          var height = parseInt(swfHeight.value || "820", 10);
+
+          playerShell.innerHTML =
+            '<object class="player-frame" type="application/x-shockwave-flash" data="' +
+            playerUrl.replace(/"/g, "&quot;") +
+            '" width="' +
+            width +
+            '" height="' +
+            height +
+            '">' +
+            '<param name="movie" value="' +
+            playerUrl.replace(/"/g, "&quot;") +
+            '" />' +
+            '<param name="quality" value="high" />' +
+            '<param name="wmode" value="direct" />' +
+            '<param name="allowScriptAccess" value="always" />' +
+            '<embed src="' +
+            playerUrl.replace(/"/g, "&quot;") +
+            '" width="' +
+            width +
+            '" height="' +
+            height +
+            '" quality="high" wmode="direct" allowScriptAccess="always" type="application/x-shockwave-flash"></embed>' +
+            "</object>";
+
+          var params = new URLSearchParams();
+          params.set("url", trimmed);
+          params.set("proxy", proxyToggle.checked ? "1" : "0");
+          params.set("w", String(width));
+          params.set("h", String(height));
+          history.replaceState({}, "", window.location.pathname + "?" + params.toString());
+        }
+
+        openButton.addEventListener("click", function () {
+          renderPlayer(swfUrlInput.value);
+        });
+
+        openDirectLink.addEventListener("click", function (event) {
+          var trimmed = (swfUrlInput.value || "").trim();
+          if (!trimmed) {
+            event.preventDefault();
+            return;
+          }
+          openDirectLink.href = buildPlayerUrl(trimmed);
+        });
+
+        swfUrlInput.addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            renderPlayer(swfUrlInput.value);
+          }
+        });
+
+        var presetUrl = getQuery("url");
+        var presetProxy = getQuery("proxy");
+        var presetWidth = getQuery("w");
+        var presetHeight = getQuery("h");
+
+        if (presetUrl) {
+          swfUrlInput.value = presetUrl;
+        }
+        if (presetProxy === "0") {
+          proxyToggle.checked = false;
+        }
+        if (presetWidth) {
+          swfWidth.value = presetWidth;
+        }
+        if (presetHeight) {
+          swfHeight.value = presetHeight;
+        }
+        if (presetUrl) {
+          renderPlayer(presetUrl);
+        } else if (playerEmpty) {
+          playerEmpty.style.display = "grid";
+        }
+
+        window.flashPlayer = {
+          load: function (url, options) {
+            options = options || {};
+            swfUrlInput.value = url || "";
+            if (typeof options.proxy === "boolean") {
+              proxyToggle.checked = options.proxy;
+            }
+            if (options.width) {
+              swfWidth.value = String(options.width);
+            }
+            if (options.height) {
+              swfHeight.value = String(options.height);
+            }
+            renderPlayer(swfUrlInput.value);
+          },
+          open: function (url, options) {
+            options = options || {};
+            var proxy = typeof options.proxy === "boolean" ? options.proxy : proxyToggle.checked;
+            var targetUrl = proxy
+              ? "/api/proxy-swf?url=" + encodeURIComponent(url || swfUrlInput.value || "")
+              : (url || swfUrlInput.value || "");
+            if (!targetUrl) {
+              return;
+            }
+            window.open(targetUrl, "_blank");
+          },
+          currentUrl: function () {
+            return swfUrlInput.value || "";
+          },
+        };
+      })();
+    </script>
+  </body>
+</html>

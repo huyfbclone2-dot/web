@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Activity Leak Browser</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="landingScreen" class="landing-screen">
+      <div class="landing-card">
+        <div class="landing-copy">
+          <h1 class="landing-title">LEAK SỰ KIỆN TRUY KÍCH</h1>
+          <p class="landing-line">AE LƯU Ý LÀ GAME CÓ UPDATE THÌ MỚI RA SỰ KIỆN MỚI</p>
+          <p class="landing-line">BẤM VÀO KHÁCH VÀ NHẬP RES_CONFIG ĐỂ XEM SK</p>
+          <p class="landing-line">
+            HƯỚNG DẪN LẤY RES_CONFIG :
+            <a class="landing-link" href="https://youtu.be/2apb5wqKTic" target="_blank" rel="noopener">
+              https://youtu.be/2apb5wqKTic
+            </a>
+          </p>
+          <p class="landing-line landing-line-accent">BUY ME A COFFEE ĐỂ XEM ẢNH FULL HD KO CHE</p>
+        </div>
+
+        <div id="landingChoice" class="landing-choice">
+          <button id="landingLoginToggle" class="landing-option accent" type="button">Đăng nhập</button>
+          <button id="landingGuestButton" class="landing-option" type="button">Khách</button>
+        </div>
+
+        <div id="landingLoginPanel" class="landing-login hidden">
+          <span class="label">Đăng Nhập</span>
+          <div class="landing-form">
+            <input id="landingUser" type="text" placeholder="Tài khoản" />
+            <input id="landingPass" type="password" placeholder="Mật khẩu" />
+          </div>
+          <div class="landing-actions">
+            <button id="landingLoginSubmit" class="ghost accent" type="button">Đăng nhập</button>
+            <button id="landingBackButton" class="ghost" type="button">Quay lại</button>
+          </div>
+          <div id="landingError" class="subtle landing-error"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="appShell" class="shell shell-hidden">
+      <header class="hero">
+        <div class="hero-topbar">
+          <div id="authBadge" class="auth-badge hidden"></div>
+          <button id="logoutButton" class="ghost auth-logout hidden" type="button">Đăng xuất</button>
+        </div>
+        <div class="hero-controls">
+          <div class="control-block">
+            <span class="label">Res Config</span>
+            <div class="search-row">
+              <input
+                id="resConfigInput"
+                type="search"
+                placeholder="res_config_ddba2ce819612612e86708bda4a80475.xml"
+              />
+              <button id="loadConfigButton" class="ghost" type="button">Nạp Config</button>
+            </div>
+          </div>
+          <div class="control-block">
+            <span class="label">Bộ lọc</span>
+            <div class="search-row">
+              <input id="searchInput" type="search" placeholder="Tìm theo ID, url, tên, mô tả..." />
+            </div>
+          </div>
+        </div>
+
+        <section id="adminPanel" class="admin-panel hidden">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Quản lý tài khoản</p>
+              <h2>Admin Control</h2>
+              <p class="subtle">Tạo mới, cập nhật mật khẩu hoặc xóa các tài khoản hiện có.</p>
+            </div>
+          </div>
+
+          <div class="admin-form">
+            <input id="accountUserInput" type="text" placeholder="Tài khoản" />
+            <input id="accountPassInput" type="password" placeholder="Mật khẩu mới hoặc mật khẩu tạo mới" />
+            <select id="accountRoleSelect">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button id="saveAccountButton" class="ghost accent" type="button">Tạo / cập nhật</button>
+            <button id="clearAccountButton" class="ghost" type="button">Xóa form</button>
+          </div>
+
+          <p id="accountMessage" class="subtle account-message"></p>
+
+          <div class="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tài khoản</th>
+                  <th>Role</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="accountRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </header>
+
+      <main class="layout">
+        <section class="preview-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Ô xem ảnh</p>
+              <h2 id="previewTitle">Chưa nạp res_config</h2>
+              <p id="previewMeta" class="subtle">Nhập tên file res_config_...xml rồi bấm Nạp Config để bắt đầu.</p>
+            </div>
+            <div id="statusBadge" class="status-badge">Idle</div>
+          </div>
+
+          <div class="preview-stage">
+            <img id="heroImage" alt="Preview activity" />
+            <div id="heroEmpty" class="hero-empty">Sau khi nạp res_config, ảnh preview sẽ hiện ở đây</div>
+          </div>
+
+          <div id="thumbRail" class="thumb-rail"></div>
+        </section>
+
+        <section class="table-panel">
+          <div class="table-head">
+            <div>
+              <p id="tableSummary" class="table-summary">Đang tải dữ liệu...</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Sự Kiện</th>
+                  <th>Mô Tả</th>
+                  <th>Thời Gian</th>
+                  <th>Xem Ảnh</th>
+                </tr>
+              </thead>
+              <tbody id="activityRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <template id="rowTemplate">
+      <tr>
+        <td class="id-cell"></td>
+        <td>
+          <div class="title-cell">
+            <strong class="row-title"></strong>
+            <span class="row-subtitle"></span>
+          </div>
+        </td>
+        <td class="desc-cell"></td>
+        <td class="time-cell"></td>
+        <td class="action-cell"></td>
+      </tr>
+    </template>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
