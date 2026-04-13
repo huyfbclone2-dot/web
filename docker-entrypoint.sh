@@ -3,6 +3,12 @@ set -eu
 
 mkdir -p /app/cache
 
+if [ ! -f /app/web/index.html ]; then
+  echo "[fatal] Missing /app/web/index.html. Docker image/source bundle is incomplete." >&2
+  echo "[fatal] Rebuild from a complete project folder that includes web/." >&2
+  exit 1
+fi
+
 if [ ! -f /app/auth.json ]; then
   cat > /app/auth.json <<'EOF'
 {

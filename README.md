@@ -35,6 +35,7 @@ Lưu ý Docker:
 - container sẽ tự tạo `auth.json` mặc định nếu file này chưa có
 - mặc định mở ở cổng `8081` ngoài máy host, map vào `8080` trong container
 - cache được mount ra `./cache` để giữ ảnh và session giữa các lần restart
+- nếu source/image thiếu thư mục `web/`, container sẽ dừng ngay với lỗi rõ ràng thay vì trả `404`
 
 `FFDec` là tùy chọn. Nếu không có, web vẫn decode asset và extract bitmap bình thường; chỉ thiếu phần render frame đẹp hơn.
 
