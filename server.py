@@ -25,7 +25,7 @@ from swf_extract_images import decode_activity_asset, decompress_swf_body, extra
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 CACHE_DIR = ROOT / "cache"
-CACHE_META_VERSION = 9
+CACHE_META_VERSION = 10
 MAX_PREVIEW_IMAGES = 3
 CLIENT_DISCONNECT_ERRORS = (BrokenPipeError, ConnectionAbortedError, ConnectionResetError)
 QR_IMAGE = ROOT / "qr.jpg"
@@ -41,22 +41,36 @@ def resolve_ffdec_exe() -> Path:
     env_path = os.environ.get("FFDEC_BIN", "").strip()
     if env_path:
         candidate = Path(env_path).expanduser()
-        if candidate.exists():
+        if candidate.exists() and (os.name == "nt" or candidate.suffix.lower() != ".exe"):
             return candidate
 
-    candidates = [
-        ROOT / "tools" / "ffdec_full" / "ffdec-cli.exe",
-        ROOT / "tools" / "ffdec_full" / "ffdec.sh",
-        ROOT / "tools" / "ffdec_full" / "ffdec",
-        ROOT.parent / "tools" / "ffdec_full" / "ffdec-cli.exe",
-        ROOT.parent / "tools" / "ffdec_full" / "ffdec.sh",
-        ROOT.parent / "tools" / "ffdec_full" / "ffdec",
-        Path("/opt/ffdec/ffdec.sh"),
-        Path("/opt/ffdec/ffdec"),
-        Path("/opt/ffdec/ffdec-cli.exe"),
-    ]
+    if os.name == "nt":
+        candidates = [
+            ROOT / "tools" / "ffdec_full" / "ffdec-cli.exe",
+            ROOT / "tools" / "ffdec_full" / "ffdec.exe",
+            ROOT / "tools" / "ffdec_full" / "ffdec.bat",
+            ROOT / "tools" / "ffdec_full" / "ffdec.sh",
+            ROOT / "tools" / "ffdec_full" / "ffdec",
+            ROOT.parent / "tools" / "ffdec_full" / "ffdec-cli.exe",
+            ROOT.parent / "tools" / "ffdec_full" / "ffdec.exe",
+            ROOT.parent / "tools" / "ffdec_full" / "ffdec.bat",
+            ROOT.parent / "tools" / "ffdec_full" / "ffdec.sh",
+            ROOT.parent / "tools" / "ffdec_full" / "ffdec",
+        ]
+    else:
+        candidates = [
+            ROOT / "tools" / "ffdec_full" / "ffdec.sh",
+            ROOT / "tools" / "ffdec_full" / "ffdec",
+            ROOT.parent / "tools" / "ffdec_full" / "ffdec.sh",
+            ROOT.parent / "tools" / "ffdec_full" / "ffdec",
+            Path("/opt/ffdec/ffdec.sh"),
+            Path("/opt/ffdec/ffdec"),
+            ROOT / "tools" / "ffdec_full" / "ffdec-cli.exe",
+            ROOT.parent / "tools" / "ffdec_full" / "ffdec-cli.exe",
+            Path("/opt/ffdec/ffdec-cli.exe"),
+        ]
     for candidate in candidates:
-        if candidate.exists():
+        if candidate.exists() and (os.name == "nt" or candidate.suffix.lower() != ".exe"):
             return candidate
     return candidates[0]
 
