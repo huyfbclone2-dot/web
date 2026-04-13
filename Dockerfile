@@ -16,12 +16,8 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY . /app/
 
-RUN adduser --disabled-password --gecos "" appuser \
-    && mkdir -p /app/cache \
-    && chmod +x /app/docker-entrypoint.sh \
-    && chown -R appuser:appuser /app
-
-USER appuser
+RUN mkdir -p /app/cache \
+    && chmod +x /app/docker-entrypoint.sh
 
 EXPOSE 8080
 
